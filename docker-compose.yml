@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile
+    image: 'breezelabs'
+    restart: unless-stopped
+    depends_on:
+      - db
+    container_name: cicontainer
+    ports:
+      - 1001:80
+      - 1006:443
+    volumes:
+      - ./www:/var/www/html
+      - ./.docker/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    restart: always
+    environment:
+      PMA_HOST: db
+      UPLOAD_LIMIT: 256M
+    ports:
+      - 1003:80
+      - 1007:443
+    depends_on:
+      - db
+  
+  db:
+    image: mariadb:10.4
+    restart: always
+    volumes:
+      - ./.docker/mariadb-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_USER: 'root'
+    
